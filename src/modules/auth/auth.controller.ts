@@ -1,16 +1,35 @@
-import { Body, Controller, Post } from '@nestjs/common';
-import { AuthService } from './auth.service';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Res,
+} from '@nestjs/common';
+import { Response } from 'express';
 import { ZodValidationPipe } from 'src/common/pipes/zod-validation/zod-validation.pipe';
+import { AuthService } from './auth.service';
+import { LoginSchema, LoginSchemaType } from './schemas/login.zod';
 import { RegisterSchema, RegisterSchemaType } from './schemas/register.zod';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @HttpCode(HttpStatus.CREATED)
   @Post('/register')
   registerUser(
     @Body(new ZodValidationPipe(RegisterSchema)) data: RegisterSchemaType,
   ) {
     return this.authService.register(data);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('/login')
+  login(
+    @Body(new ZodValidationPipe(LoginSchema)) data: LoginSchemaType,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return this.authService.login(data, res);
   }
 }

@@ -13,7 +13,6 @@ import { ENV_KEYS } from './common/constants/env.keys';
       isGlobal: true,
     }),
     MongooseModule.forRootAsync({
-      imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         uri: config.get<string>(ENV_KEYS.MONGO_URI),
