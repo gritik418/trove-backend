@@ -9,10 +9,10 @@ export class MailService {
 
   constructor(private readonly mailerService: MailerService) {}
 
-  async sendVerificationEmail(to: string, link: string) {
+  async sendVerificationEmail(to: string, link: string, subject: string) {
     this.mailerService.sendMail({
       to,
-      subject: 'Your Trove Adventure Awaits — Verify to Begin 🛍️',
+      subject,
       template: 'verify-email',
       context: {
         link,

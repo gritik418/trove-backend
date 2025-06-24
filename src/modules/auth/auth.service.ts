@@ -65,6 +65,7 @@ export class AuthService {
       await this.mailService.sendVerificationEmail(
         data.email,
         emailVerificationLink,
+        'Your Trove Adventure Awaits — Verify to Begin 🛍️',
       );
 
       return {
@@ -77,7 +78,7 @@ export class AuthService {
         },
       };
     } catch (e) {
-      throw new InternalServerErrorException('Something went wrong');
+      throw new InternalServerErrorException('Something went wrong.');
     }
   }
 
@@ -136,21 +137,70 @@ export class AuthService {
       throw new BadRequestException('Invalid verification link.');
     }
 
-    await this.userModel.findByIdAndUpdate(data.userId, {
-      $set: {
-        isEmailVerified: true,
-      },
-      $unset: {
-        emailVerificationToken: 1,
-        emailVerificationTokenExpiry: 1,
-      },
-    });
+    try {
+      await this.userModel.findByIdAndUpdate(data.userId, {
+        $set: {
+          isEmailVerified: true,
+        },
+        $unset: {
+          emailVerificationToken: 1,
+          emailVerificationTokenExpiry: 1,
+        },
+      });
 
-    await this.mailService.sendVerificationSuccessEmail(user.email, user.name);
+      await this.mailService.sendVerificationSuccessEmail(
+        user.email,
+        user.name,
+      );
 
-    return {
-      statusCode: 200,
-      message: 'Email verified successfully. Please log in to continue.',
-    };
+      return {
+        statusCode: 200,
+        message: 'Email verified successfully. Please log in to continue.',
+      };
+    } catch (error) {
+      throw new InternalServerErrorException('Something went wrong.');
+    }
+  }
+
+  async resendVerificationEmail(email: string) {
+    const user = await this.userModel.findOne({ email });
+    if (!user) {
+      throw new BadRequestException('User not found.');
+    }
+
+    if (user.isEmailVerified) {
+      throw new BadRequestException('Email is already verified.');
+    }
+
+    try {
+      const emailVerificationToken: string = uuidv4();
+      const hashedVerificationToken: string = await bcrypt.hash(
+        emailVerificationToken,
+        8,
+      );
+
+      await this.userModel.findByIdAndUpdate(user._id, {
+        $set: {
+          emailVerificationToken: hashedVerificationToken,
+          emailVerificationTokenExpiry: new Date(Date.now() + 10 * 60 * 1000),
+        },
+      });
+
+      const emailVerificationLink: string = `${process.env[ENV_KEYS.CLIENT_URL]}/verify-email/${user._id}/${emailVerificationToken}`;
+
+      await this.mailService.sendVerificationEmail(
+        user.email,
+        emailVerificationLink,
+        'Here’s Your New Trove Verification Link 🛍️',
+      );
+
+      return {
+        statusCode: 200,
+        message:
+          'A new verification email has been sent. Please check your inbox.',
+      };
+    } catch (error) {
+      throw new InternalServerErrorException('Something went wrong.');
+    }
   }
 }
