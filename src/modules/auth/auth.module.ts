@@ -6,6 +6,7 @@ import { ENV_KEYS } from 'src/common/constants/env.keys';
 import { User, UserSchema } from '../user/schemas/user.schema';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { AuthService } from './auth.service';
         secret: configService.get<string>(ENV_KEYS.JWT_SECRET),
       }),
     }),
+    MailModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],

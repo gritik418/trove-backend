@@ -16,29 +16,51 @@ import {
   ACCESS_TOKEN_COOKIE_NAME,
   cookieOptions,
 } from 'src/common/constants/cookie-options';
+import { MailService } from '../mail/mail.service';
+import { v4 as uuidv4 } from 'uuid';
+import { ENV_KEYS } from 'src/common/constants/env.keys';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
     private jwtService: JwtService,
+    private mailService: MailService,
   ) {}
 
   async register(data: RegisterSchemaType) {
     if (data.password !== data.confirmPassword)
       throw new BadRequestException('Confirm Password must match Password.');
 
-    const existingUser = await this.userModel.findOne({ email: data.email });
-    if (existingUser) throw new BadRequestException('Email already exists.');
+    const existingUser = await this.userModel.findOne({
+      email: data.email,
+    });
+    if (existingUser) {
+      if (existingUser.isEmailVerified) {
+        throw new BadRequestException('Email already exists.');
+      }
+      await this.userModel.findByIdAndDelete(existingUser._id);
+    }
 
     try {
       const hashedPassword = await bcrypt.hash(data.password, 10);
+      const emailVerificationToken: string = uuidv4();
 
       const user = await this.userModel.create({
         name: data.name,
         email: data.email,
+        phone: data.phone,
         password: hashedPassword,
+        emailVerificationToken,
+        emailVerificationTokenExpiry: new Date(Date.now() + 10 * 60 * 1000),
       });
+
+      const emailVerificationLink: string = `${process.env[ENV_KEYS.CLIENT_URL]}/verify-email/${user._id}/${emailVerificationToken}`;
+
+      await this.mailService.sendVerificationEmail(
+        data.email,
+        emailVerificationLink,
+      );
 
       return {
         statusCode: 201,
