@@ -4,6 +4,7 @@ import { User, UserSchema } from './schemas/user.schema';
 import { Address, AddressSchema } from './schemas/address.schema';
 import { UserService } from './user.service';
 import { UserController } from './user.controller';
+import { JwtGlobalModule } from 'src/common/jwt/jwt.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { UserController } from './user.controller';
         schema: AddressSchema,
       },
     ]),
+    JwtGlobalModule,
   ],
   providers: [UserService],
   controllers: [UserController],

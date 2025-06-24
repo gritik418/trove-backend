@@ -20,6 +20,7 @@ import { MailService } from '../mail/mail.service';
 import { v4 as uuidv4 } from 'uuid';
 import { ENV_KEYS } from 'src/common/constants/env.keys';
 import { VerifyEmailSchemaType } from './schemas/verify-email.zod';
+import { JwtPayload } from 'src/common/types/jwt-payload.type';
 
 @Injectable()
 export class AuthService {
@@ -97,7 +98,11 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials.');
     }
 
-    const payload = { sub: user._id };
+    const payload: JwtPayload = {
+      sub: String(user._id),
+      email: user.email,
+      role: user.role,
+    };
 
     const authToken = this.jwtService.sign(payload);
 
