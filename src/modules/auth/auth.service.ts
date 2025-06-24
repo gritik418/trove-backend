@@ -19,6 +19,7 @@ import {
 import { MailService } from '../mail/mail.service';
 import { v4 as uuidv4 } from 'uuid';
 import { ENV_KEYS } from 'src/common/constants/env.keys';
+import { VerifyEmailSchemaType } from './schemas/verify-email.zod';
 
 @Injectable()
 export class AuthService {
@@ -43,15 +44,19 @@ export class AuthService {
     }
 
     try {
-      const hashedPassword = await bcrypt.hash(data.password, 10);
+      const hashedPassword: string = await bcrypt.hash(data.password, 10);
       const emailVerificationToken: string = uuidv4();
+      const hashedVerificationToken: string = await bcrypt.hash(
+        emailVerificationToken,
+        8,
+      );
 
       const user = await this.userModel.create({
         name: data.name,
         email: data.email,
         phone: data.phone,
         password: hashedPassword,
-        emailVerificationToken,
+        emailVerificationToken: hashedVerificationToken,
         emailVerificationTokenExpiry: new Date(Date.now() + 10 * 60 * 1000),
       });
 
@@ -100,6 +105,52 @@ export class AuthService {
     return {
       statusCode: 200,
       message: 'Logged In successfully.',
+    };
+  }
+
+  async verifyEmail(data: VerifyEmailSchemaType) {
+    const user = await this.userModel.findById(data.userId);
+    if (!user) {
+      throw new BadRequestException('User not found.');
+    }
+
+    if (user.isEmailVerified) {
+      throw new BadRequestException('Email is already verified.');
+    }
+
+    if (!user.emailVerificationToken || !user.emailVerificationTokenExpiry) {
+      throw new BadRequestException('No verification token found.');
+    }
+
+    if (user.emailVerificationTokenExpiry < new Date()) {
+      throw new BadRequestException(
+        'Verification link expired. You can request a new one.',
+      );
+    }
+
+    const isVerificationTokenValid = await bcrypt.compare(
+      data.token,
+      user.emailVerificationToken,
+    );
+    if (!isVerificationTokenValid) {
+      throw new BadRequestException('Invalid verification link.');
+    }
+
+    await this.userModel.findByIdAndUpdate(data.userId, {
+      $set: {
+        isEmailVerified: true,
+      },
+      $unset: {
+        emailVerificationToken: 1,
+        emailVerificationTokenExpiry: 1,
+      },
+    });
+
+    await this.mailService.sendVerificationSuccessEmail(user.email, user.name);
+
+    return {
+      statusCode: 200,
+      message: 'Email verified successfully. Please log in to continue.',
     };
   }
 }

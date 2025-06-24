@@ -11,6 +11,10 @@ import { ZodValidationPipe } from 'src/common/pipes/zod-validation/zod-validatio
 import { AuthService } from './auth.service';
 import { LoginSchema, LoginSchemaType } from './schemas/login.zod';
 import { RegisterSchema, RegisterSchemaType } from './schemas/register.zod';
+import {
+  VerifyEmailSchema,
+  VerifyEmailSchemaType,
+} from './schemas/verify-email.zod';
 
 @Controller('auth')
 export class AuthController {
@@ -31,5 +35,13 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     return this.authService.login(data, res);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('/verify-email')
+  verifyEmail(
+    @Body(new ZodValidationPipe(VerifyEmailSchema)) data: VerifyEmailSchemaType,
+  ) {
+    return this.authService.verifyEmail(data);
   }
 }
