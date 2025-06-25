@@ -8,6 +8,7 @@ import { UserModule } from './modules/user/user.module';
 import { ENV_KEYS } from './common/constants/env.keys';
 import { MailModule } from './modules/mail/mail.module';
 import { JwtGlobalModule } from './common/jwt/jwt.module';
+import { ProductModule } from './modules/product/product.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { JwtGlobalModule } from './common/jwt/jwt.module';
     AuthModule,
     MailModule,
     JwtGlobalModule,
+    ProductModule,
   ],
   controllers: [AppController],
   providers: [AppService],
