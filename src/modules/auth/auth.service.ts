@@ -72,10 +72,12 @@ export class AuthService {
       return {
         statusCode: 201,
         message: 'User registered successfully.',
-        user: {
-          name: user.name,
-          email: user.email,
-          role: user.role,
+        data: {
+          user: {
+            name: user.name,
+            email: user.email,
+            role: user.role,
+          },
         },
       };
     } catch (e) {

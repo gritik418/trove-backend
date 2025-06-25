@@ -1,16 +1,15 @@
 import { Controller, Get, Req, UseGuards } from '@nestjs/common';
 import { Request } from 'express';
-import { Roles } from 'src/common/decorators/roles.decorator';
-import { Role } from 'src/common/enums/role.enum';
 import { AuthGuard } from 'src/common/guards/auth/auth.guard';
-import { RolesGuard } from 'src/common/guards/roles/roles.guard';
+import { UserService } from './user.service';
 
 @Controller('user')
 export class UserController {
-  @Roles(Role.ADMIN, Role.CUSTOMER)
-  @UseGuards(AuthGuard, RolesGuard)
+  constructor(private userService: UserService) {}
+
+  @UseGuards(AuthGuard)
   @Get('/me')
   getUser(@Req() req: Request) {
-    return req.user;
+    return this.userService.getUserById(req.user?.sub!);
   }
 }
