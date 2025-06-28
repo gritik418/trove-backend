@@ -1,5 +1,5 @@
 import { Types } from 'mongoose';
-import { SpecificationGroup } from './specification.interface';
+import { SpecificationGroup } from '../schemas/zod/specification.zod';
 
 export type DiscountType = 'PERCENT' | 'FIXED';
 

@@ -9,13 +9,13 @@ import {
 import { Response } from 'express';
 import { ZodValidationPipe } from 'src/common/pipes/zod-validation/zod-validation.pipe';
 import { AuthService } from './auth.service';
-import { EmailSchema, EmailSchemaType } from './schemas/email.zod';
-import { LoginSchema, LoginSchemaType } from './schemas/login.zod';
-import { RegisterSchema, RegisterSchemaType } from './schemas/register.zod';
+import { EmailSchema, EmailSchemaType } from './schemas/zod/email.zod';
+import { LoginSchema, LoginSchemaType } from './schemas/zod/login.zod';
+import { RegisterSchema, RegisterSchemaType } from './schemas/zod/register.zod';
 import {
   VerifyEmailSchema,
   VerifyEmailSchemaType,
-} from './schemas/verify-email.zod';
+} from './schemas/zod/verify-email.zod';
 
 @Controller('auth')
 export class AuthController {

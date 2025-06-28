@@ -8,8 +8,8 @@ import * as bcrypt from 'bcrypt';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from '../user/schemas/user.schema';
 import { Model } from 'mongoose';
-import { RegisterSchemaType } from './schemas/register.zod';
-import { LoginSchemaType } from './schemas/login.zod';
+import { RegisterSchemaType } from './schemas/zod/register.zod';
+import { LoginSchemaType } from './schemas/zod/login.zod';
 import { Response } from 'express';
 import { JwtService } from '@nestjs/jwt';
 import {
@@ -19,7 +19,7 @@ import {
 import { MailService } from '../mail/mail.service';
 import { v4 as uuidv4 } from 'uuid';
 import { ENV_KEYS } from 'src/common/constants/env.keys';
-import { VerifyEmailSchemaType } from './schemas/verify-email.zod';
+import { VerifyEmailSchemaType } from './schemas/zod/verify-email.zod';
 import { JwtPayload } from 'src/common/types/jwt-payload.type';
 
 @Injectable()

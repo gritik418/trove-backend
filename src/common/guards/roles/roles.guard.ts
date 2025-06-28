@@ -30,7 +30,6 @@ export class RolesGuard implements CanActivate {
       context.getClass(),
     ]);
 
-    console.log(requiredRoles);
     if (requiredRoles && !requiredRoles.includes(user.role)) {
       throw new ForbiddenException(
         'You are not authorized to access this resource.',

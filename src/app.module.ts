@@ -9,6 +9,7 @@ import { ENV_KEYS } from './common/constants/env.keys';
 import { MailModule } from './modules/mail/mail.module';
 import { JwtGlobalModule } from './common/jwt/jwt.module';
 import { ProductModule } from './modules/product/product.module';
+import { CloudinaryModule } from './common/cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { ProductModule } from './modules/product/product.module';
     MailModule,
     JwtGlobalModule,
     ProductModule,
+    CloudinaryModule,
   ],
   controllers: [AppController],
   providers: [AppService],
