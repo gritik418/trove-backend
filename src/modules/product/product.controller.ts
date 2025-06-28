@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Param,
   Post,
   Query,
   UploadedFiles,
@@ -32,6 +33,12 @@ export class ProductController {
     @Query(new ParseProductQueryParamsPipe()) queryParams: GetProductsQuery,
   ) {
     return this.productService.getProducts(queryParams);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Get('/:value')
+  getProduct(@Param('value') value: string) {
+    return this.productService.getProductByIdOrSlug(value);
   }
 
   @Roles(Role.ADMIN, Role.SELLER)

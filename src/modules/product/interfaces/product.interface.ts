@@ -3,6 +3,11 @@ import { SpecificationGroup } from '../schemas/zod/specification.zod';
 
 export type DiscountType = 'PERCENT' | 'FIXED';
 
+export interface Image {
+  url: string;
+  publicId: string;
+}
+
 export interface Product {
   _id: Types.ObjectId;
   name: string;
@@ -20,8 +25,8 @@ export interface Product {
   discountType?: DiscountType;
   discountValue?: number;
   stock: number;
-  thumbnail?: string;
-  images: string[];
+  thumbnail?: Image;
+  images: Image[];
   isFeatured: boolean;
   isPublished: boolean;
 }

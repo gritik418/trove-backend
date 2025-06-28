@@ -1,6 +1,10 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { isValidObjectId, Model } from 'mongoose';
 import { CloudinaryService } from 'src/common/cloudinary/cloudinary.service';
 import { CreateProductWithFilesDto } from './interfaces/create-product-with-files.interface';
 import { Product } from './schemas/product.schema';
@@ -57,12 +61,34 @@ export class ProductService {
       .skip((page - 1) * limit)
       .limit(limit)
       .sort({ createdAt: -1 })
+      .lean()
       .exec();
 
     return {
       statusCode: 200,
       message: 'Products fetched successfully.',
-      data: { products, totalProducts },
+      data: {
+        products,
+        totalPages: Math.ceil(totalProducts / limit),
+        currentPage: page,
+        limit,
+      },
+    };
+  }
+
+  async getProductByIdOrSlug(value: string) {
+    const query = isValidObjectId(value) ? { _id: value } : { slug: value };
+
+    const product = await this.productModel.findOne(query).exec();
+
+    if (!product) {
+      throw new NotFoundException('Product not found.');
+    }
+
+    return {
+      statusCode: 200,
+      message: 'Product fetched successfully.',
+      data: product,
     };
   }
 
@@ -111,8 +137,14 @@ export class ProductService {
 
     const product = await this.productModel.create({
       ...data,
-      thumbnail: thumbnailUpload.secure_url,
-      images: imagesUpload.map((image: UploadApiResponse) => image.secure_url),
+      thumbnail: {
+        publicId: thumbnailUpload.public_id,
+        url: thumbnailUpload.secure_url,
+      },
+      images: imagesUpload.map((image) => ({
+        publicId: image.public_id,
+        url: image.secure_url,
+      })),
     });
 
     return {

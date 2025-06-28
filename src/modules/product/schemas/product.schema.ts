@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { SpecificationGroup } from './specification.schema';
+import { ImageSchema } from './image.schema';
 
 @Schema({ timestamps: true })
 export class Product {
@@ -48,11 +49,11 @@ export class Product {
   @Prop({ required: true })
   stock: number;
 
-  @Prop()
-  thumbnail?: string;
+  @Prop({ type: ImageSchema })
+  thumbnail?: ImageSchema;
 
-  @Prop({ type: [String], default: [] })
-  images: string[];
+  @Prop({ type: [ImageSchema], default: [] })
+  images: ImageSchema[];
 
   @Prop({ default: false })
   isFeatured: boolean;
