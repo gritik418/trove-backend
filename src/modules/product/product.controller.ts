@@ -1,7 +1,11 @@
 import {
   Body,
   Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
   Post,
+  Query,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
@@ -15,13 +19,24 @@ import { AuthGuard } from 'src/common/guards/auth/auth.guard';
 import { RolesGuard } from 'src/common/guards/roles/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from 'src/common/enums/role.enum';
+import { GetProductsQuery } from './interfaces/get-products-query.interface';
+import { ParseProductQueryParamsPipe } from './pipes/parse-product-query-params/parse-product-query-params.pipe';
 
 @Controller('product')
 export class ProductController {
   constructor(private productService: ProductService) {}
 
+  @HttpCode(HttpStatus.OK)
+  @Get('/')
+  getAllProducts(
+    @Query(new ParseProductQueryParamsPipe()) queryParams: GetProductsQuery,
+  ) {
+    return this.productService.getProducts(queryParams);
+  }
+
   @Roles(Role.ADMIN, Role.SELLER)
   @UseGuards(AuthGuard, RolesGuard)
+  @HttpCode(HttpStatus.CREATED)
   @Post('/')
   @UseInterceptors(
     FileFieldsInterceptor([

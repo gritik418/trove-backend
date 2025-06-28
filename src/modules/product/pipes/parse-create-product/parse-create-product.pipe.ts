@@ -1,9 +1,4 @@
-import {
-  ArgumentMetadata,
-  BadRequestException,
-  Injectable,
-  PipeTransform,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, PipeTransform } from '@nestjs/common';
 import {
   CreateProductDto,
   CreateProductSchema,
@@ -11,7 +6,7 @@ import {
 
 @Injectable()
 export class ParseCreateProductPipe implements PipeTransform {
-  transform(value: any, metadata: ArgumentMetadata) {
+  transform(value: any) {
     try {
       const parsed: CreateProductDto = {
         ...value,

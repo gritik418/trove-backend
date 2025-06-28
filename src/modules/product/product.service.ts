@@ -5,6 +5,7 @@ import { CloudinaryService } from 'src/common/cloudinary/cloudinary.service';
 import { CreateProductWithFilesDto } from './interfaces/create-product-with-files.interface';
 import { Product } from './schemas/product.schema';
 import { UploadApiResponse } from 'cloudinary';
+import { GetProductsQuery } from './interfaces/get-products-query.interface';
 
 @Injectable()
 export class ProductService {
@@ -12,6 +13,58 @@ export class ProductService {
     @InjectModel(Product.name) private productModel: Model<Product>,
     private cloudinaryService: CloudinaryService,
   ) {}
+
+  async getProducts({
+    limit = 10,
+    page = 1,
+    isPublished = true,
+    search = '',
+    categories = [],
+  }: GetProductsQuery) {
+    const filters: any = {};
+
+    if (typeof isPublished === 'boolean') {
+      filters.isPublished = isPublished;
+    }
+
+    if (search) {
+      filters.$or = [
+        {
+          name: { $regex: search, $options: 'i' },
+        },
+        {
+          title: { $regex: search, $options: 'i' },
+        },
+        {
+          brand: { $regex: search, $options: 'i' },
+        },
+        {
+          description: { $regex: search, $options: 'i' },
+        },
+      ];
+    }
+
+    if (categories.length > 0) {
+      filters.categories = { $in: categories };
+    }
+
+    const totalProducts = await this.productModel
+      .countDocuments(filters)
+      .exec();
+
+    const products = await this.productModel
+      .find(filters)
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .sort({ createdAt: -1 })
+      .exec();
+
+    return {
+      statusCode: 200,
+      message: 'Products fetched successfully.',
+      data: { products, totalProducts },
+    };
+  }
 
   async createProduct(data: CreateProductWithFilesDto) {
     const existingSlug = await this.productModel.findOne({ slug: data.slug });
@@ -62,6 +115,10 @@ export class ProductService {
       images: imagesUpload.map((image: UploadApiResponse) => image.secure_url),
     });
 
-    return product;
+    return {
+      message: 'Product created successfully.',
+      statusCode: 201,
+      data: product,
+    };
   }
 }
