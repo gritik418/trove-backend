@@ -18,6 +18,9 @@ export class ParseCreateProductPipe implements PipeTransform {
         isFeatured: this.parseBoolean(value.isFeatured),
         isPublished: this.parseBoolean(value.isPublished),
         specifications: this.parseJsonArray(value.specifications),
+        offers: this.parseJsonArray(value.offers),
+        warranty: this.parseJson(value.warranty),
+        returnPolicy: this.parseJson(value.returnPolicy),
       };
 
       return CreateProductSchema.parse(parsed);
@@ -53,6 +56,15 @@ export class ParseCreateProductPipe implements PipeTransform {
       return typeof input === 'string' ? JSON.parse(input) : [];
     } catch {
       throw new Error('Invalid JSON in specifications');
+    }
+  }
+
+  private parseJson(input: any): any {
+    if (!input) return undefined;
+    try {
+      return typeof input === 'string' ? JSON.parse(input) : input;
+    } catch {
+      throw new Error('Invalid JSON object');
     }
   }
 }

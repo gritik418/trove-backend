@@ -39,6 +39,7 @@ export class UserService {
     return {
       message: 'User retrieved successfully.',
       statusCode: 200,
+      success: true,
       data: {
         user: sanitizedUser,
       },

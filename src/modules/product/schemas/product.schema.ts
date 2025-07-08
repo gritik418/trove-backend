@@ -1,6 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { SpecificationGroup } from './specification.schema';
 import { ImageSchema } from './image.schema';
+import { OfferSchema } from './offer.schema';
+import { WarrantySchema } from './warranty.schema';
+import { ReturnPolicySchema } from './return-policy.schema';
 
 @Schema({ timestamps: true })
 export class Product {
@@ -60,6 +63,15 @@ export class Product {
 
   @Prop({ default: false })
   isPublished: boolean;
+
+  @Prop({ type: [OfferSchema], default: [] })
+  offers?: OfferSchema[];
+
+  @Prop({ type: WarrantySchema })
+  warranty?: WarrantySchema;
+
+  @Prop({ type: ReturnPolicySchema })
+  returnPolicy?: ReturnPolicySchema;
 }
 
 export const ProductSchema = SchemaFactory.createForClass(Product);

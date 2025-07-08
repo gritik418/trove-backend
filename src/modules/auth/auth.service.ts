@@ -70,6 +70,7 @@ export class AuthService {
       );
 
       return {
+        success: true,
         statusCode: 201,
         message: 'User registered successfully.',
         data: {
@@ -111,6 +112,7 @@ export class AuthService {
     res.cookie(ACCESS_TOKEN_COOKIE_NAME, authToken, cookieOptions);
 
     return {
+      success: true,
       statusCode: 200,
       message: 'Logged In successfully.',
     };
@@ -161,6 +163,7 @@ export class AuthService {
       );
 
       return {
+        success: true,
         statusCode: 200,
         message: 'Email verified successfully. Please log in to continue.',
       };
@@ -202,6 +205,7 @@ export class AuthService {
       );
 
       return {
+        success: true,
         statusCode: 200,
         message:
           'A new verification email has been sent. Please check your inbox.',

@@ -8,6 +8,29 @@ export interface Image {
   publicId: string;
 }
 
+export interface Offer {
+  title: string;
+  description?: string;
+  terms?: string;
+  startDate?: Date;
+  endDate?: Date;
+  isActive: boolean;
+}
+
+export interface Warranty {
+  duration: string; // e.g., '6 months', '1 year'
+  type?: string; // e.g., 'Manufacturer', 'Seller'
+  description?: string;
+}
+
+export interface ReturnPolicy {
+  isReturnable: boolean;
+  returnWindowDays?: number; // e.g., 10, 30
+  returnCharges?: string; // e.g., 'Free returns', '₹50 restocking fee'
+  conditions?: string; // e.g., 'Product must be unused and in original packaging'
+  returnMethod?: string; // e.g., 'Pickup', 'Drop-off', etc.
+}
+
 export interface Product {
   _id: Types.ObjectId;
   name: string;
@@ -27,6 +50,9 @@ export interface Product {
   stock: number;
   thumbnail?: Image;
   images: Image[];
+  offers?: Offer[];
+  warranty?: Warranty;
+  returnPolicy?: ReturnPolicy;
   isFeatured: boolean;
   isPublished: boolean;
 }

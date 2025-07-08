@@ -1,5 +1,8 @@
 import { z } from 'zod';
 import { SpecificationsSchema } from './specification.zod';
+import { OfferSchema } from './offer.zod';
+import { WarrantySchema } from './warranty.zod';
+import { ReturnPolicySchema } from './return-policy.zod';
 
 export const CreateProductSchema = z
   .object({
@@ -20,6 +23,9 @@ export const CreateProductSchema = z
     stock: z.number().nonnegative().default(0),
     isFeatured: z.boolean().default(false),
     isPublished: z.boolean().default(false),
+    offers: z.array(OfferSchema).optional(),
+    warranty: WarrantySchema.optional(),
+    returnPolicy: ReturnPolicySchema.optional(),
   })
   .superRefine((data, ctx) => {
     const { discountType, discountValue } = data;

@@ -4,12 +4,19 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { UploadApiResponse } from 'cloudinary';
 import { isValidObjectId, Model } from 'mongoose';
 import { CloudinaryService } from 'src/common/cloudinary/cloudinary.service';
 import { CreateProductWithFilesDto } from './interfaces/create-product-with-files.interface';
-import { Product } from './schemas/product.schema';
-import { UploadApiResponse } from 'cloudinary';
 import { GetProductsQuery } from './interfaces/get-products-query.interface';
+import {
+  VariantColor,
+  VariantColorSize,
+  Variants,
+  VariantSize,
+  VariantType,
+} from './interfaces/variant.interface';
+import { Product } from './schemas/product.schema';
 
 @Injectable()
 export class ProductService {
@@ -85,10 +92,12 @@ export class ProductService {
       throw new NotFoundException('Product not found.');
     }
 
+    const { variants, variantType } = await this.getVariants(product.name);
+
     return {
       statusCode: 200,
       message: 'Product fetched successfully.',
-      data: product,
+      data: { product, variants, variantType },
     };
   }
 
@@ -152,5 +161,95 @@ export class ProductService {
       statusCode: 201,
       data: product,
     };
+  }
+
+  private async getVariants(
+    name: string,
+  ): Promise<{ variants: Variants; variantType: VariantType }> {
+    const products = await this.productModel.find({ name });
+    const variantType = this.inferVariantType(products);
+
+    switch (variantType) {
+      case 'color-size':
+        const variantsColorSize = new Map<string, VariantColorSize>();
+
+        for (const product of products) {
+          if (!product.color || !product.size) continue;
+
+          if (!variantsColorSize.has(product?.color)) {
+            variantsColorSize.set(product.color, {
+              color: product.color,
+              thumbnail: product.thumbnail?.url,
+              sizes: [],
+            });
+          }
+
+          const variant = variantsColorSize.get(product.color);
+          variant?.sizes.push({
+            size: product.size,
+            slug: product.slug,
+            isPublished: product.isPublished,
+            stock: product.stock,
+          });
+        }
+
+        return {
+          variants: Array.from(variantsColorSize.values()),
+          variantType,
+        };
+
+      case 'color':
+        const variantsColor = new Map<string, VariantColor>();
+
+        for (const product of products) {
+          if (!product.color) continue;
+          if (!variantsColor.has(product?.color)) {
+            variantsColor.set(product.color, {
+              color: product.color,
+              isPublished: product.isPublished,
+              stock: product.stock,
+              slug: product.slug,
+              thumbnail: product.thumbnail?.url,
+            });
+          }
+        }
+
+        return { variants: Array.from(variantsColor.values()), variantType };
+
+      case 'size':
+        const variantsSize = new Map<string, VariantSize>();
+
+        for (const product of products) {
+          if (!product.size) continue;
+          if (!variantsSize.has(product.size)) {
+            variantsSize.set(product.size, {
+              size: product.size,
+              isPublished: product.isPublished,
+              slug: product.slug,
+              stock: product.stock,
+              thumbnail: product.thumbnail?.url,
+            });
+          }
+        }
+
+        return { variants: Array.from(variantsSize.values()), variantType };
+
+      default:
+        return { variants: [], variantType };
+    }
+  }
+
+  private inferVariantType(products: Product[]): VariantType {
+    const allHaveColor = products.every((product) => !!product.color);
+    const allHaveSize = products.every((products) => !!products.size);
+    const noneHaveColor = products.every((products) => !products.color);
+    const noneHaveSize = products.every((products) => !products.size);
+
+    if (allHaveColor && allHaveSize) return 'color-size';
+
+    if (allHaveColor && noneHaveSize) return 'color';
+
+    if (allHaveSize && noneHaveColor) return 'size';
+    return 'none';
   }
 }
